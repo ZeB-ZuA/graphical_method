@@ -17,6 +17,9 @@ import com.udistrital.graphical_method.entity.LinearProblem;
 import com.udistrital.graphical_method.entity.ObjectiveFunction;
 import com.udistrital.graphical_method.entity.Restriction;
 import com.udistrital.graphical_method.service.LinearProblemService;
+import org.springframework.web.bind.annotation.GetMapping;
+
+
 
 @RestController
 @RequestMapping("/graphical-method")
@@ -41,4 +44,12 @@ public class GraficalMethodController {
         LinearProblemResponse response = new LinearProblemResponse(intersectionsList, max, min);
         return ResponseEntity.ok(response);
     }
+
+
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("API is working!");
+    }
 }
+    
+
