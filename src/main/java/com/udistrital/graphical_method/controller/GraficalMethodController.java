@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,34 +28,38 @@ public class GraficalMethodController {
     @Autowired
     private LinearProblemService linearProblemService;
 
-    @PostMapping("/solve")
-    public ResponseEntity<LinearProblemResponse> solve(@RequestBody LinearProblem linearProblem) {
-        ObjectiveFunction objectiveFunction = linearProblemService
-                .parseObjectiveFunction(linearProblem.getObjectiveFunctionText());
-        List<Restriction> restrictions = linearProblemService.parseRestrictions(linearProblem.getRestrictionsText());
+   @PostMapping("/solve")
+    public ResponseEntity<?> solve(@RequestBody LinearProblem linearProblem) {
+        try {
+            ObjectiveFunction objectiveFunction = linearProblemService
+                    .parseObjectiveFunction(linearProblem.getObjectiveFunctionText());
+            List<Restriction> restrictions = linearProblemService.parseRestrictions(linearProblem.getRestrictionsText());
 
-        List<Map<String, Double>> intersections = new ArrayList<>();
-        for (Restriction restriction : restrictions) {
-            intersections.add(linearProblemService.calculateIntersections(restriction));
+            List<Map<String, Double>> intersections = new ArrayList<>();
+            for (Restriction restriction : restrictions) {
+                intersections.add(linearProblemService.calculateIntersections(restriction));
+            }
+
+            Map<String, Object> maxResult = linearProblemService.getMax(objectiveFunction, intersections);
+            Map<String, Object> minResult = linearProblemService.getMin(objectiveFunction, intersections);
+
+            Double maxValue = (Double) maxResult.get("value");
+            int maxIndex = (int) maxResult.get("index");
+
+            Double minValue = (Double) minResult.get("value");
+            int minIndex = (int) minResult.get("index");
+
+            LinearProblemResponse response = new LinearProblemResponse();
+            response.setIntersections(intersections);
+            response.setMaxValue(maxValue);
+            response.setMaxIndex(maxIndex);
+            response.setMinValue(minValue);
+            response.setMinIndex(minIndex);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-
-        Map<String, Object> maxResult = linearProblemService.getMax(objectiveFunction, intersections);
-        Map<String, Object> minResult = linearProblemService.getMin(objectiveFunction, intersections);
-
-        Double maxValue = (Double) maxResult.get("value");
-        int maxIndex = (int) maxResult.get("index");
-
-        Double minValue = (Double) minResult.get("value");
-        int minIndex = (int) minResult.get("index");
-
-        LinearProblemResponse response = new LinearProblemResponse();
-        response.setIntersections(intersections);
-        response.setMaxValue(maxValue);
-        response.setMaxIndex(maxIndex);
-        response.setMinValue(minValue);
-        response.setMinIndex(minIndex);
-
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/test")
