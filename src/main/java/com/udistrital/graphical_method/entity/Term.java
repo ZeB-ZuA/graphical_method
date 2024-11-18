@@ -10,13 +10,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Term {
-    
+
     private Double coefficient;
-    private String variable; 
+    private String variable;
 
     @Override
-public String toString() {
-    return "Term {coefficient=" + coefficient + ", variable='" + variable + "'}";
-}
+    public String toString() {
+        return "Term {coefficient=" + coefficient + ", variable='" + variable + "'}";
+    }
 
 }

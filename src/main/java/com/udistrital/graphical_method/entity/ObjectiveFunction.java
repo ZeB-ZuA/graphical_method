@@ -34,7 +34,7 @@ public class ObjectiveFunction {
     }
 
     public ObjectiveFunction parseObjectiveFunction(String objectiveFunctionText) {
-        objectiveFunctionText = objectiveFunctionText.replace(" ", ""); 
+        objectiveFunctionText = objectiveFunctionText.replace(" ", "");
         List<Term> terms = new ArrayList<>();
         String expression = "([+-]?\\d*\\.?\\d*)?([a-zA-Z]+)";
         Pattern pattern = Pattern.compile(expression);
@@ -50,19 +50,18 @@ public class ObjectiveFunction {
     }
 
     @Override
-public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("ObjectiveFunction {\n");
-    sb.append("  terms=[\n");
-    for (Term term : terms) {
-        sb.append("    ").append(term).append(",\n");
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ObjectiveFunction {\n");
+        sb.append("  terms=[\n");
+        for (Term term : terms) {
+            sb.append("    ").append(term).append(",\n");
+        }
+        sb.append("  ]\n");
+        sb.append("  constant=").append(constant).append("\n");
+        sb.append("}");
+
+        return sb.toString();
     }
-    sb.append("  ]\n");
-    sb.append("  constant=").append(constant).append("\n");
-    sb.append("}");
-
-    return sb.toString();
-}
-
 
 }
