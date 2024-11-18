@@ -15,5 +15,7 @@ import lombok.Setter;
 public class LinearProblemResponse {
     private List<Map<String, Double>> intersections;
     private Double maxValue;
+    private int maxIndex;
     private Double minValue;
+    private int minIndex;
 }

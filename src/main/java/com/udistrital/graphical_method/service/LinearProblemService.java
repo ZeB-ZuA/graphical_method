@@ -16,29 +16,38 @@ import java.util.regex.Pattern;
 @Service
 public class LinearProblemService {
 
-    public Double getMax(ObjectiveFunction objectiveFunction, List<Map<String, Double>> intersections) {
+    public Map<String, Object> getMax(ObjectiveFunction objectiveFunction, List<Map<String, Double>> intersections) {
         Double max = Double.NEGATIVE_INFINITY;
-        for (Map<String, Double> intersection : intersections) {
-            Double result = objectiveFunction.evaluate(intersection);
+        int maxIndex = -1;
+        for (int i = 0; i < intersections.size(); i++) {
+            Double result = objectiveFunction.evaluate(intersections.get(i));
             if (result > max) {
                 max = result;
+                maxIndex = i;
             }
         }
-        
-        return max;
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("value", max);
+        resultMap.put("index", maxIndex);
+        return resultMap;
     }
-    public Double getMin(ObjectiveFunction objectiveFunction, List<Map<String, Double>> intersections) {
+
+    public Map<String, Object> getMin(ObjectiveFunction objectiveFunction, List<Map<String, Double>> intersections) {
         Double min = Double.POSITIVE_INFINITY;
-        
-        for (Map<String, Double> intersection : intersections) {
-            Double result = objectiveFunction.evaluate(intersection);
+        int minIndex = -1;
+        for (int i = 0; i < intersections.size(); i++) {
+            Double result = objectiveFunction.evaluate(intersections.get(i));
             if (result < min) {
                 min = result;
+                minIndex = i;
             }
         }
-        
-        return min;
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("value", min);
+        resultMap.put("index", minIndex);
+        return resultMap;
     }
+
     public ObjectiveFunction parseObjectiveFunction(String objectiveFunctionText) {
         objectiveFunctionText = objectiveFunctionText.replace(" ", "");
         List<Term> terms = new ArrayList<>();
@@ -55,50 +64,52 @@ public class LinearProblemService {
 
         return new ObjectiveFunction(terms);
     }
+
     public Map<String, Double> calculateIntersections(Restriction restriction) {
         Map<String, Double> intersections = new HashMap<>();
-        
+
         double constant = restriction.getConstant();
         List<Term> terms = restriction.getTerms();
 
         double xCoefficient = 0;
-        boolean hasY = false; 
-        
+        boolean hasY = false;
+
         for (Term term : terms) {
             if (term.getVariable().equals("x")) {
                 xCoefficient = term.getCoefficient();
             } else if (term.getVariable().equals("y")) {
                 hasY = true;
-                constant -= term.getCoefficient() * 0;  
+                constant -= term.getCoefficient() * 0;
             }
         }
-        
+
         if (xCoefficient != 0) {
             intersections.put("x", constant / xCoefficient);
         } else {
-            intersections.put("x", 0.0); 
+            intersections.put("x", 0.0);
         }
-        constant = restriction.getConstant();  
+        constant = restriction.getConstant();
         double yCoefficient = 0;
-        boolean hasX = false;  
-        
+        boolean hasX = false;
+
         for (Term term : terms) {
             if (term.getVariable().equals("y")) {
                 yCoefficient = term.getCoefficient();
             } else if (term.getVariable().equals("x")) {
                 hasX = true;
-                constant -= term.getCoefficient() * 0;  
+                constant -= term.getCoefficient() * 0;
             }
         }
-        
+
         if (yCoefficient != 0) {
             intersections.put("y", constant / yCoefficient);
         } else {
-            intersections.put("y", 0.0); 
+            intersections.put("y", 0.0);
         }
 
         return intersections;
     }
+
     public List<Restriction> parseRestrictions(List<String> restrictionsText) {
         List<Restriction> restrictions = new ArrayList<>();
         String termPattern = "([+-]?\\d*\\.?\\d*)?([a-zA-Z]+)";
@@ -131,7 +142,5 @@ public class LinearProblemService {
 
         return restrictions;
     }
-
-
 
 }

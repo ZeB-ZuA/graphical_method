@@ -19,8 +19,6 @@ import com.udistrital.graphical_method.entity.Restriction;
 import com.udistrital.graphical_method.service.LinearProblemService;
 import org.springframework.web.bind.annotation.GetMapping;
 
-
-
 @RestController
 @RequestMapping("/graphical-method")
 @CrossOrigin(origins = "*")
@@ -29,27 +27,38 @@ public class GraficalMethodController {
     @Autowired
     private LinearProblemService linearProblemService;
 
-    @PostMapping("/show")
-    public ResponseEntity<?> show(@RequestBody LinearProblem linearProblem) {
+    @PostMapping("/solve")
+    public ResponseEntity<LinearProblemResponse> solve(@RequestBody LinearProblem linearProblem) {
         ObjectiveFunction objectiveFunction = linearProblemService
                 .parseObjectiveFunction(linearProblem.getObjectiveFunctionText());
         List<Restriction> restrictions = linearProblemService.parseRestrictions(linearProblem.getRestrictionsText());
-        List<Map<String, Double>> intersectionsList = new ArrayList<>();
+
+        List<Map<String, Double>> intersections = new ArrayList<>();
         for (Restriction restriction : restrictions) {
-            Map<String, Double> intersections = linearProblemService.calculateIntersections(restriction);
-            intersectionsList.add(intersections);
+            intersections.add(linearProblemService.calculateIntersections(restriction));
         }
-        Double max = linearProblemService.getMax(objectiveFunction, intersectionsList);
-        Double min = linearProblemService.getMin(objectiveFunction, intersectionsList);
-        LinearProblemResponse response = new LinearProblemResponse(intersectionsList, max, min);
+
+        Map<String, Object> maxResult = linearProblemService.getMax(objectiveFunction, intersections);
+        Map<String, Object> minResult = linearProblemService.getMin(objectiveFunction, intersections);
+
+        Double maxValue = (Double) maxResult.get("value");
+        int maxIndex = (int) maxResult.get("index");
+
+        Double minValue = (Double) minResult.get("value");
+        int minIndex = (int) minResult.get("index");
+
+        LinearProblemResponse response = new LinearProblemResponse();
+        response.setIntersections(intersections);
+        response.setMaxValue(maxValue);
+        response.setMaxIndex(maxIndex);
+        response.setMinValue(minValue);
+        response.setMinIndex(minIndex);
+
         return ResponseEntity.ok(response);
     }
-
 
     @GetMapping("/test")
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("API is working! HOLA DANNA, KFC >>>> FRIZZZZBY");
     }
 }
-    
-
