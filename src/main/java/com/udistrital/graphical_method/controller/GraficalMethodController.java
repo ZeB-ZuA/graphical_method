@@ -1,6 +1,6 @@
 package com.udistrital.graphical_method.controller;
 
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Map;
 
@@ -28,39 +28,46 @@ public class GraficalMethodController {
     @Autowired
     private LinearProblemService linearProblemService;
 
-   @PostMapping("/solve")
-    public ResponseEntity<?> solve(@RequestBody LinearProblem linearProblem) {
-        try {
-            ObjectiveFunction objectiveFunction = linearProblemService
-                    .parseObjectiveFunction(linearProblem.getObjectiveFunctionText());
-            List<Restriction> restrictions = linearProblemService.parseRestrictions(linearProblem.getRestrictionsText());
-
-            List<Map<String, Double>> intersections = new ArrayList<>();
-            for (Restriction restriction : restrictions) {
-                intersections.add(linearProblemService.calculateIntersections(restriction));
-            }
-
-            Map<String, Object> maxResult = linearProblemService.getMax(objectiveFunction, intersections);
-            Map<String, Object> minResult = linearProblemService.getMin(objectiveFunction, intersections);
-
-            Double maxValue = (Double) maxResult.get("value");
-            int maxIndex = (int) maxResult.get("index");
-
-            Double minValue = (Double) minResult.get("value");
-            int minIndex = (int) minResult.get("index");
-
-            LinearProblemResponse response = new LinearProblemResponse();
-            response.setIntersections(intersections);
-            response.setMaxValue(maxValue);
-            response.setMaxIndex(maxIndex);
-            response.setMinValue(minValue);
-            response.setMinIndex(minIndex);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+    @PostMapping("/solve")
+public ResponseEntity<?> solve(@RequestBody LinearProblem linearProblem) {
+    try {
+        // Parseo de la función objetivo y las restricciones
+        ObjectiveFunction objectiveFunction = linearProblemService
+                .parseObjectiveFunction(linearProblem.getObjectiveFunctionText());
+        List<Restriction> restrictions = linearProblemService.parseRestrictions(linearProblem.getRestrictionsText());
+        
+        // Llamar a calculateAllIntersections para obtener todas las intersecciones
+        List<Map<String, Double>> allIntersections = linearProblemService.calculateAllIntersections(restrictions);
+    
+        // Refinar las intersecciones entre las rectas y las intersecciones de los ejes
+        List<Map<String, Double>> refinedIntersections = linearProblemService.refineIntersections(allIntersections, restrictions);
+    
+        // Calcular los valores máximos y mínimos
+        Map<String, Object> maxResult = linearProblemService.getMax(objectiveFunction, refinedIntersections);
+        Map<String, Object> minResult = linearProblemService.getMin(objectiveFunction, refinedIntersections);
+    
+        Double maxValue = (Double) maxResult.get("value");
+        int maxIndex = (int) maxResult.get("index");
+    
+        Double minValue = (Double) minResult.get("value");
+        int minIndex = (int) minResult.get("index");
+    
+        // Construir la respuesta
+        LinearProblemResponse response = new LinearProblemResponse();
+        response.setAllIntersections(allIntersections);  // Asignar todas las intersecciones
+        response.setMaxValue(maxValue);
+        response.setMaxIndex(maxIndex);
+        response.setMinValue(minValue);
+        response.setMinIndex(minIndex);
+    
+        return ResponseEntity.ok(response);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
+}
+    
+
+    
 
     @GetMapping("/test")
     public ResponseEntity<String> test() {

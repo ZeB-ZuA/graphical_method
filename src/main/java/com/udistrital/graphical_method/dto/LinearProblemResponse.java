@@ -13,7 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LinearProblemResponse {
-    private List<Map<String, Double>> intersections;
+    private List<Map<String, Double>> allIntersections; 
     private Double maxValue;
     private int maxIndex;
     private Double minValue;
