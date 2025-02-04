@@ -31,6 +31,7 @@ public class GraficalMethodController {
     @PostMapping("/solve")
 public ResponseEntity<?> solve(@RequestBody LinearProblem linearProblem) {
     try {
+        System.out.println("Received JSON: " + linearProblem.toString());
         // Parseo de la función objetivo y las restricciones
         ObjectiveFunction objectiveFunction = linearProblemService
                 .parseObjectiveFunction(linearProblem.getObjectiveFunctionText());
