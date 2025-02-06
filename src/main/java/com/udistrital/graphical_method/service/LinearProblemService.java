@@ -61,7 +61,7 @@ public class LinearProblemService {
     
     public ObjectiveFunction parseObjectiveFunction(String objectiveFunctionText) {
         try {
-            System.out.println("Recibí función objetivo: " + objectiveFunctionText);
+           // System.out.println("Recibí función objetivo: " + objectiveFunctionText);
             if (objectiveFunctionText == null || objectiveFunctionText.trim().isEmpty()) {
                 throw new IllegalArgumentException("Objective function text cannot be empty.");
             }
@@ -80,7 +80,7 @@ public class LinearProblemService {
                 terms.add(new Term(coefficient, variable));
             }
 
-            System.out.println("Función objetivo parseada: " + terms);
+           // System.out.println("Función objetivo parseada: " + terms);
             return new ObjectiveFunction(terms);
         } catch (Exception e) {
             throw new LinearProblemException("Error while parsing objective function: " + e.getMessage());
@@ -137,7 +137,7 @@ public class LinearProblemService {
 
     public List<Restriction> parseRestrictions(List<String> restrictionsText) {
         try {
-            System.out.println("Recibí restricciones: " + restrictionsText);
+          //  System.out.println("Recibí restricciones: " + restrictionsText);
             if (restrictionsText == null || restrictionsText.isEmpty()) {
                 throw new IllegalArgumentException("Restrictions text cannot be empty.");
             }
@@ -164,7 +164,7 @@ public class LinearProblemService {
                 }
                 Restriction restriction = new Restriction(terms, operator, constant);
                 restrictions.add(restriction);
-                System.out.println("Restricción parseada: " + restriction);
+              //  System.out.println("Restricción parseada: " + restriction);
             }
             return restrictions;
         } catch (Exception e) {
