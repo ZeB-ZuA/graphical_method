@@ -89,6 +89,6 @@ public class GraficalMethodController {
 
     @GetMapping("/test")
     public ResponseEntity<String> test() {
-        return ResponseEntity.ok("API is working! HOLA DANNA, KFC >>>> FRIZZZZBY");
+        return ResponseEntity.ok("API is working! HOLA DANNA, KFC <<<<< FRIZZZZBY");
     }
 }
