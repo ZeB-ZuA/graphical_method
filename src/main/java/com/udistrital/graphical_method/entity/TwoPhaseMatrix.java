@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.udistrital.graphical_method.dto.FirstPhaseResponse;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +22,7 @@ public class TwoPhaseMatrix {
     private Map<String, Double> objectiveAuxCoefficients;
     private Map<String, Double> artificialCoefficients;
     private List<Double> z;
+    private List<FirstPhaseResponse> firstPhaseResponses;
 
     public TwoPhaseMatrix(ObjectiveFunction auxiliaryObjective, List<Restriction> restrictions) {
         this.variables = new ArrayList<>();
@@ -27,6 +30,7 @@ public class TwoPhaseMatrix {
         this.artificialCoefficients = new LinkedHashMap<>();
         this.z = new ArrayList<>();
         this.tableau = new double[restrictions.size()][];
+        this.firstPhaseResponses = new ArrayList<>();
         buildMatrix(auxiliaryObjective, restrictions);
 
     }
@@ -113,12 +117,12 @@ public class TwoPhaseMatrix {
 
     private void pivot(int rowPivot, int columnPivot) {
         double pivotValue = tableau[rowPivot][columnPivot];
-    
+
         // Normalizar la fila pivote
         for (int j = 0; j < tableau[0].length; j++) {
             tableau[rowPivot][j] = tableau[rowPivot][j] / pivotValue;
         }
-    
+
         // Ajustar las demás filas
         for (int i = 0; i < tableau.length; i++) {
             if (i != rowPivot) {
@@ -128,35 +132,31 @@ public class TwoPhaseMatrix {
                 }
             }
         }
-    
+
         // Actualizar la función objetivo Z
         double factor = z.get(columnPivot);
         for (int j = 0; j < z.size(); j++) {
             z.set(j, Math.round((z.get(j) - factor * tableau[rowPivot][j]) * 10.0) / 10.0);
         }
-    
+
         // 🚀 **Actualizar la variable en la base**
         String nuevaVariable = variables.get(columnPivot); // Variable que entra
-    
+
         // Convertir el LinkedHashMap en una lista de entradas
         List<Map.Entry<String, Double>> entradas = new ArrayList<>(artificialCoefficients.entrySet());
-    
+
         // Reemplazar la clave en la posición rowPivot
-        Map.Entry<String, Double> entradaAntigua = entradas.get(rowPivot);
-        entradas.set(rowPivot, new AbstractMap.SimpleEntry<>(nuevaVariable, objectiveAuxCoefficients.getOrDefault(nuevaVariable, 0.0)));
-    
+        entradas.set(rowPivot, new AbstractMap.SimpleEntry<>(nuevaVariable,
+                objectiveAuxCoefficients.getOrDefault(nuevaVariable, 0.0)));
+
         // Reconstruir el LinkedHashMap
         artificialCoefficients.clear();
         for (Map.Entry<String, Double> entrada : entradas) {
             artificialCoefficients.put(entrada.getKey(), entrada.getValue());
         }
+
     }
-    
-    
-    
-    
-    
-    
+
     private void printTableau() {
         // Imprimir las claves del mapa objectiveAuxCoefficients
         System.out.println("Claves de objectiveAuxCoefficients:");
@@ -164,7 +164,7 @@ public class TwoPhaseMatrix {
             System.out.print(key + "\t");
         }
         System.out.println();
-    
+
         // Imprimir el tableau con redondeo a 1 decimal
         for (int i = 0; i < tableau.length; i++) {
             for (int j = 0; j < tableau[0].length; j++) {
@@ -172,64 +172,84 @@ public class TwoPhaseMatrix {
             }
             System.out.println();
         }
-    
+
         // Imprimir Z con redondeo a 1 decimal
         System.out.print("Z: ");
         for (double value : z) {
             System.out.print(Math.round(value * 10.0) / 10.0 + "\t");
         }
         System.out.println();
-    
+
         // Imprimir Cx y Cj
         System.out.println("Cx: " + artificialCoefficients);
         System.out.println("Cj: " + objectiveAuxCoefficients);
     }
 
-
-
-    public void solveSimplex() {
+    private void solveSimplex() {
         int iteration = 0;
         while (true) {
-            System.out.println("\n===== ITERACIÓN " + iteration + " =====");
-            
+            System.out.println("===== ITERACIÓN " + iteration + " =====");
             printTableau();
-    
+
             // Verificar si la solución es óptima
             if (isOptimal()) {
                 System.out.println("✅ Se alcanzó la solución óptima.");
                 break;
             }
-    
+
             // Encontrar la columna pivote
             int columnPivot = getColumnPivot(z);
             if (columnPivot == -1) {
                 System.out.println("❌ No se encontró columna pivote, problema no acotado.");
                 break;
             }
-    
+
             // Encontrar la fila pivote
             int rowPivot = getRowPivot(columnPivot);
             if (rowPivot == -1) {
                 System.out.println("❌ No se encontró fila pivote, problema no acotado.");
                 break;
             }
-    
+
             System.out.println("Columna pivote: " + columnPivot);
             System.out.println("Fila pivote: " + rowPivot);
-    
+
             // Realizar el pivoteo
             pivot(rowPivot, columnPivot);
-    
+
+            // Guardar el estado actual en firstPhaseResponses después del pivoteo
+            double[][] deepTableuCopy = new double[tableau.length][tableau[0].length];
+            for (int i = 0; i < tableau.length; i++) {
+                for (int j = 0; j < tableau[0].length; j++) {
+                    deepTableuCopy[i][j] = tableau[i][j];
+                }
+            }
+
+            List<Double> deepZCopy = new ArrayList<>(z);
+            Map<String, Double> deepArtificialCoefficientsCopy = new LinkedHashMap<>(artificialCoefficients);
+            Map<String, Double> deepObjectiveAuxCoefficientsCopy = new LinkedHashMap<>(objectiveAuxCoefficients);
+
+            firstPhaseResponses.add(new FirstPhaseResponse(deepTableuCopy, deepZCopy, deepArtificialCoefficientsCopy,
+                    deepObjectiveAuxCoefficientsCopy));
+
             iteration++;
         }
+
+        // Guardar el estado final en firstPhaseResponses
+        double[][] finalTableuCopy = new double[tableau.length][tableau[0].length];
+        for (int i = 0; i < tableau.length; i++) {
+            for (int j = 0; j < tableau[0].length; j++) {
+                finalTableuCopy[i][j] = tableau[i][j];
+            }
+        }
+
+        List<Double> finalZCopy = new ArrayList<>(z);
+        Map<String, Double> finalArtificialCoefficientsCopy = new LinkedHashMap<>(artificialCoefficients);
+        Map<String, Double> finalObjectiveAuxCoefficientsCopy = new LinkedHashMap<>(objectiveAuxCoefficients);
+
+        firstPhaseResponses.add(new FirstPhaseResponse(finalTableuCopy, finalZCopy, finalArtificialCoefficientsCopy,
+                finalObjectiveAuxCoefficientsCopy));
     }
-    
-
-
-
-
-
-
 
     public int getColumnPivot(List<Double> z) {
         int columnPivot = -1;
@@ -265,6 +285,7 @@ public class TwoPhaseMatrix {
 
         return rowPivot;
     }
+
     private boolean isOptimal() {
         for (int i = 0; i < z.size() - 1; i++) { // Excluir el valor de B
             if (z.get(i) > 0) {
@@ -273,5 +294,5 @@ public class TwoPhaseMatrix {
         }
         return true;
     }
-    
+
 }

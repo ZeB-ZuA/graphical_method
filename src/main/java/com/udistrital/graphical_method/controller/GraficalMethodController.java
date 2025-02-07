@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.udistrital.graphical_method.dto.FirstPhaseResponse;
 import com.udistrital.graphical_method.dto.LinearProblemResponse;
 import com.udistrital.graphical_method.entity.LinearProblem;
 import com.udistrital.graphical_method.entity.ObjectiveFunction;
@@ -56,7 +57,7 @@ public class GraficalMethodController {
             int minIndex = (int) minResult.get("index");
 
             LinearProblemResponse response = new LinearProblemResponse();
-            response.setAllIntersections(allIntersections); 
+            response.setAllIntersections(allIntersections);
             response.setMaxValue(maxValue);
             response.setMaxIndex(maxIndex);
             response.setMinValue(minValue);
@@ -73,13 +74,13 @@ public class GraficalMethodController {
         try {
             System.out.println("Received JSON: " + linearProblem.toString());
             TwoPhaseMatrix matrix = twoPhasesService.transformToPhaseOne(linearProblem);
-            return ResponseEntity.ok(matrix);
+
+            List<FirstPhaseResponse> firstPhaseResponses = matrix.getFirstPhaseResponses();
+            return ResponseEntity.ok(firstPhaseResponses);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
-
-
 
     @GetMapping("/test")
     public ResponseEntity<String> test() {
