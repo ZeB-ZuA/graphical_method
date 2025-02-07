@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.udistrital.graphical_method.dto.FirstPhaseResponse;
 import com.udistrital.graphical_method.dto.LinearProblemResponse;
+import com.udistrital.graphical_method.dto.SecondPhaseResponse;
+import com.udistrital.graphical_method.dto.TwoPhaseResponse;
 import com.udistrital.graphical_method.entity.LinearProblem;
 import com.udistrital.graphical_method.entity.ObjectiveFunction;
 import com.udistrital.graphical_method.entity.Restriction;
@@ -76,7 +78,10 @@ public class GraficalMethodController {
             TwoPhaseMatrix matrix = twoPhasesService.transformToPhaseOne(linearProblem);
 
             List<FirstPhaseResponse> firstPhaseResponses = matrix.getFirstPhaseResponses();
-            return ResponseEntity.ok(firstPhaseResponses);
+            List<SecondPhaseResponse> secondPhaseResponses = matrix.getSecondPhaseResponses();
+
+            TwoPhaseResponse response = new TwoPhaseResponse(firstPhaseResponses, secondPhaseResponses);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

@@ -83,7 +83,7 @@ public class TwoPhasesService {
 
         // Crear la matriz de la Fase 1 con las restricciones transformadas y la función
         // objetivo auxiliar
-        TwoPhaseMatrix matrix = new TwoPhaseMatrix(auxiliaryObjective, transformedRestrictions);
+        TwoPhaseMatrix matrix = new TwoPhaseMatrix(auxiliaryObjective, transformedRestrictions, originalObjective);
 
         return matrix;
     }
