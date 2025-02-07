@@ -1,5 +1,7 @@
 package com.udistrital.graphical_method.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,41 +37,52 @@ public class GraficalMethodController {
     @Autowired
     private TwoPhasesService twoPhasesService;
 
-    @PostMapping("/linear-problem")
-    public ResponseEntity<?> linearProblem(@RequestBody LinearProblem linearProblem) {
-        try {
-            System.out.println("Received JSON: " + linearProblem.toString());
-            ObjectiveFunction objectiveFunction = linearProblemService
-                    .parseObjectiveFunction(linearProblem.getObjectiveFunctionText());
-            List<Restriction> restrictions = linearProblemService
-                    .parseRestrictions(linearProblem.getRestrictionsText());
+   @PostMapping("/linear-problem")
+public ResponseEntity<?> linearProblem(@RequestBody LinearProblem linearProblem) {
+    try {
+        System.out.println("Received JSON: " + linearProblem.toString());
+        ObjectiveFunction objectiveFunction = linearProblemService
+                .parseObjectiveFunction(linearProblem.getObjectiveFunctionText());
+        List<Restriction> restrictions = linearProblemService
+                .parseRestrictions(linearProblem.getRestrictionsText());
 
-            List<Map<String, Double>> allIntersections = linearProblemService.calculateAllIntersections(restrictions);
+        List<Map<String, Double>> allIntersections = linearProblemService.calculateAllIntersections(restrictions);
 
-            List<Map<String, Double>> refinedIntersections = linearProblemService.refineIntersections(allIntersections,
-                    restrictions);
+        List<Map<String, Double>> refinedIntersections = linearProblemService.refineIntersections(allIntersections,
+                restrictions);
 
-            Map<String, Object> maxResult = linearProblemService.getMax(objectiveFunction, refinedIntersections);
-            Map<String, Object> minResult = linearProblemService.getMin(objectiveFunction, refinedIntersections);
+        Map<String, Object> maxResult = linearProblemService.getMax(objectiveFunction, refinedIntersections);
+        Map<String, Object> minResult = linearProblemService.getMin(objectiveFunction, refinedIntersections);
 
-            Double maxValue = (Double) maxResult.get("value");
-            int maxIndex = (int) maxResult.get("index");
+        Double maxValue = (Double) maxResult.get("value");
+        int maxIndex = (int) maxResult.get("index");
 
-            Double minValue = (Double) minResult.get("value");
-            int minIndex = (int) minResult.get("index");
+        Double minValue = (Double) minResult.get("value");
+        int minIndex = (int) minResult.get("index");
 
-            LinearProblemResponse response = new LinearProblemResponse();
-            response.setAllIntersections(allIntersections);
-            response.setMaxValue(maxValue);
-            response.setMaxIndex(maxIndex);
-            response.setMinValue(minValue);
-            response.setMinIndex(minIndex);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        // Reemplazar las claves x_1 por x y x_2 por y en allIntersections
+        List<Map<String, Double>> updatedIntersections = new ArrayList<>();
+        for (Map<String, Double> intersection : allIntersections) {
+            Map<String, Double> updatedIntersection = new HashMap<>();
+            for (Map.Entry<String, Double> entry : intersection.entrySet()) {
+                String newKey = entry.getKey().replace("x_1", "x").replace("x_2", "y");
+                updatedIntersection.put(newKey, entry.getValue());
+            }
+            updatedIntersections.add(updatedIntersection);
         }
+
+        LinearProblemResponse response = new LinearProblemResponse();
+        response.setAllIntersections(updatedIntersections);
+        response.setMaxValue(maxValue);
+        response.setMaxIndex(maxIndex);
+        response.setMinValue(minValue);
+        response.setMinIndex(minIndex);
+
+        return ResponseEntity.ok(response);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
+}
 
     @PostMapping("/two-phases")
     public ResponseEntity<?> twoPhases(@RequestBody LinearProblem linearProblem) {
