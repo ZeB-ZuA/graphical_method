@@ -348,7 +348,7 @@ public class TwoPhaseMatrix {
             printTableau(tableau2, z2, artificialCoefficients2, objectiveAuxCoefficients2);
 
             // Verificar si la solución es óptima
-            if (isOptimal()) {
+            if (isOptimal2()) {
                 System.out.println("✅ Se alcanzó la solución óptima.");
                 break;
             }
@@ -444,6 +444,16 @@ public class TwoPhaseMatrix {
     private boolean isOptimal() {
         for (int i = 0; i < z.size() - 1; i++) { // Excluir el valor de B
             if (z.get(i) > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isOptimal2() {
+        // Verificar si todos los valores en z2 (excepto el último valor) son menores o iguales a 0 (para minimización)
+        for (int j = 0; j < z2.size() - 1; j++) {
+            if (z2.get(j) > 0) {
                 return false;
             }
         }

@@ -68,7 +68,7 @@ public class TwoPhasesService {
                     newTerms.add(new Term(1.0, slackName)); // +H
                     objectiveAuxCoefficients.put(slackName, 0.0);
                     break;
-            }
+            } 
 
             // Crear una nueva restricción transformada
             transformedRestrictions.add(new Restriction(newTerms, "=", restriction.getConstant()));
